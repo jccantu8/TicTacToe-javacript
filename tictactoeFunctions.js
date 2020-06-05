@@ -121,28 +121,28 @@ const gameBoard = (() => {
 	};
 })();
 
-const Player = (name) => {
-
-};
-
 const displayController = (() => {
 	const playGame = () => {
 		gameBoard.displayBoard();
 		if (checkPlayerWin(gameBoard.boardMain)) {
+			alert("You win! Click on the board to restart.");
+			gameBoard.restart();
 			return;
 		}
 		if (checkDraw(gameBoard.boardMain)) {
-			alert("Draw!");
+			alert("Draw! Click on the board to restart.");
 			gameBoard.restart();
 			return;
 		}
 		makeComputerMove();
 		gameBoard.displayBoard();
 		if (checkComputerWin(gameBoard.boardMain)) {
+			alert("You lose! Click on the board to restart.");
+			gameBoard.restart();
 			return;
 		}
 		if (checkDraw(gameBoard.boardMain)) {
-			alert("Draw!");
+			alert("Draw! Click on the board to restart.");
 			gameBoard.restart();
 			return;
 		}
@@ -151,23 +151,15 @@ const displayController = (() => {
 	const checkPlayerWin = (board) => {
 		for (let i = 0; i <= 2; i++) {
 			if (board[3*i] === 'X' && board[3*i + 1] === 'X' && board[3*i + 2] === 'X') {
-				alert('You win!');
-				gameBoard.restart();
 				return true;
 			} else if (board[i] === 'X' && board[i + 3] === 'X' && board[i + 6] === 'X') {
-				alert('You win!');
-				gameBoard.restart();
 				return true;
 			};
 		}
 
 		if (board[0] === 'X' && board[4] === 'X' && board[8] === 'X') {
-				alert('You win!');
-				gameBoard.restart();
 				return true;
 		} else if (board[2] === 'X' && board[4] === 'X' && board[6] === 'X') {
-				alert('You win!');
-				gameBoard.restart();
 				return true;
 		}
 	};
@@ -175,23 +167,15 @@ const displayController = (() => {
 	const checkComputerWin = (board) => {
 		for (let i = 0; i <= 2; i++) {
 			if (board[3*i] === 'O' && board[3*i + 1] === 'O' && board[3*i + 2] === 'O') {
-				alert('You lose!');
-				gameBoard.restart();
 				return true;
 			} else if (board[i] === 'O' && board[i + 3] === 'O' && board[i + 6] === 'O') {
-				alert('You lose!');
-				gameBoard.restart();
 				return true;
 			};
 		}
 
 		if (board[0] === 'O' && board[4] === 'O' && board[8] === 'O') {
-				alert('You lose!');
-				gameBoard.restart();
 				return true;
 		} else if (board[2] === 'O' && board[4] === 'O' && board[6] === 'O') {
-				alert('You lose!');
-				gameBoard.restart();
 				return true;
 		}
 	};
@@ -207,20 +191,85 @@ const displayController = (() => {
 	};
 
 	const makeComputerMove = () => {
-		let randomPosition = null;
-		do {
-			randomPosition = Math.floor(Math.random() * 9);
-		}
-		while (!(gameBoard.boardMain[randomPosition] === ''));
-
-		gameBoard.placeO(randomPosition, gameBoard.boardMain);
+		move = optimalMove(gameBoard.boardMain, 'computer')
+		gameBoard.placeO(move, gameBoard.boardMain);
 	};
 
-	/*const optimalMove = () => {
+	const optimalMove = (board, currentPlayer) => {
+
+		let topScore = -10000;
+		let topMove = null;
+		let depth = 0;
+
 		for(let position = 0; position < 9; position++) {
-			if 
+			if (gameBoard.isEmpty(position, board)) {
+				let boardCopy = board.slice();
+
+				if (currentPlayer === 'computer') {
+					gameBoard.placeO(position, boardCopy);
+				} else { //Must be human then
+					gameBoard.placeX(position, boardCopy);
+				};
+
+				let nextPlayer = null;
+				if (currentPlayer = 'computer') {
+					nextPlayer = 'human';
+				} else {
+					nextPlayer = 'computer';
+				};
+
+				newScore = minimax(boardCopy, nextPlayer, depth);
+
+				if (newScore > topScore) {
+					topScore = newScore;
+					topMove = position;
+				}
+			}
+		};
+
+		return topMove;
+	};
+
+	const minimax = (board, currentPlayer, depth) => {
+		if (checkComputerWin(board)) {
+			return 10;
+		} else if (checkPlayerWin(board)) {
+			return -10;
+		} else if (checkDraw(board)) {
+			return 0;
+		};
+
+		let scoreList = [];
+		depth++;
+
+		for(let position = 0; position < 9; position++) {
+			if (gameBoard.isEmpty(position, board)) {
+				let boardCopy = board.slice();
+
+				if (currentPlayer === 'computer') {
+					gameBoard.placeO(position, boardCopy);
+				} else { //Must be human then
+					gameBoard.placeX(position, boardCopy);
+				};
+
+				let nextPlayer = null;
+				if (currentPlayer === 'computer') {
+					nextPlayer = 'human';
+				} else {
+					nextPlayer = 'computer';
+				};
+
+				scoreList.push(minimax(boardCopy, nextPlayer, depth));
+			}
 		}
-	};*/
+
+		if (currentPlayer === 'computer') {
+			return Math.max(...scoreList) - depth;
+		} else {
+			return Math.min(...scoreList) + depth;
+		};
+
+	};
 
 	return {
 		playGame,
